@@ -114,32 +114,32 @@ public class Router: ObservableObject {
     
     weak var navigationController: UINavigationController? {
         didSet {
-            let selector = #selector(UINavigationController.pushViewController(_:animated:))
-            let pushViewController = class_getInstanceMethod(UINavigationController.self, selector)!
-            
-            let defaultImplementation = method_getImplementation(pushViewController)
-            let defaultBlock = unsafeBitCast(defaultImplementation, to: CPushViewController.self)
-            
-            let block: PushViewController = { [weak self] (_self, viewController, animated) in
-                defaultBlock(_self, selector, viewController, animated)
-                
-                if let coordinator = _self.transitionCoordinator {
-                    coordinator.animate(alongsideTransition: nil) { [weak self] context in
-                        print("<coordinator> executePendingActivation")
-                        DispatchQueue.main.asyncAfter(deadline: .now() + context.transitionDuration) { [weak self] in
-                            self?.executePendingActivation()
-                        }
-                    }
-                } else {
-                    print("<coordinator> No coordinator")
-                    DispatchQueue.main.async { [weak self] in
-                        self?.executePendingActivation()
-                    }
-                }
-            }
-            
-            let implementation = imp_implementationWithBlock(block)
-            method_setImplementation(pushViewController, implementation)
+//            let selector = #selector(UINavigationController.pushViewController(_:animated:))
+//            let pushViewController = class_getInstanceMethod(UINavigationController.self, selector)!
+//
+//            let defaultImplementation = method_getImplementation(pushViewController)
+//            let defaultBlock = unsafeBitCast(defaultImplementation, to: CPushViewController.self)
+//
+//            let block: PushViewController = { [weak self] (_self, viewController, animated) in
+//                defaultBlock(_self, selector, viewController, animated)
+//
+//                if let coordinator = _self.transitionCoordinator {
+//                    coordinator.animate(alongsideTransition: nil) { [weak self] context in
+//                        print("<coordinator> executePendingActivation")
+//                        DispatchQueue.main.asyncAfter(deadline: .now() + context.transitionDuration) { [weak self] in
+//                            self?.executePendingActivation()
+//                        }
+//                    }
+//                } else {
+//                    print("<coordinator> No coordinator")
+//                    DispatchQueue.main.async { [weak self] in
+//                        self?.executePendingActivation()
+//                    }
+//                }
+//            }
+//
+//            let implementation = imp_implementationWithBlock(block)
+//            method_setImplementation(pushViewController, implementation)
         }
     }
     
@@ -159,11 +159,11 @@ public class Router: ObservableObject {
     private func activate(partial segments: RouteSegments, through position: Int) {
         self.route = ActivatedRoute(segments: Array(segments.prefix(through: position)))
         
-        pendingActivation = { self.activate(segments) }
+//        pendingActivation = { self.activate(segments) }
         
-//        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
-//            self.activate(segments)
-//        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(550)) {
+            self.activate(segments)
+        }
     }
     
     public func pop() {
