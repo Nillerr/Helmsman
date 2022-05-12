@@ -106,6 +106,7 @@ import UIKit
 
 public class Router: ObservableObject {
     private typealias PushViewController = @convention(block) (UINavigationController, UIViewController, Bool) -> Void
+    private typealias CPushViewController = @convention(c) (UINavigationController, UIViewController, Bool) -> Void
     
     @Published private(set) var route: ActivatedRoute = .root
     
@@ -116,7 +117,7 @@ public class Router: ObservableObject {
             let pushViewController = class_getInstanceMethod(UINavigationController.self, #selector(UINavigationController.pushViewController(_:animated:)))!
             
             let defaultImplementation = method_getImplementation(pushViewController)
-            let defaultBlock = unsafeBitCast(defaultImplementation, to: PushViewController.self)
+            let defaultBlock = unsafeBitCast(defaultImplementation, to: CPushViewController.self)
             
             let block: PushViewController = { [weak self] (_self, viewController, animated) in
                 defaultBlock(_self, viewController, animated)
