@@ -11,10 +11,13 @@ let package = Package(
             name: "Helmsman",
             targets: ["Helmsman"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect", from: "0.1.4")
+    ],
     targets: [
         .target(
             name: "Helmsman",
-            dependencies: []),
+            dependencies: [.product(name: "Introspect", package: "SwiftUI-Introspect")]),
         .testTarget(
             name: "HelmsmanTests",
             dependencies: ["Helmsman"]),

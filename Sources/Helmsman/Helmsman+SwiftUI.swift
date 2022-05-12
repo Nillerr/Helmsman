@@ -90,6 +90,9 @@ public struct RouteableNavigationView<Content: View>: View {
             VStack(spacing: 0) {
                 content
             }
+            .introspectNavigationController { navigationController in
+                router.navigationController = navigationController
+            }
         }
         .navigationViewStyle(.stack)
         .environment(\.route, router.route.nested())

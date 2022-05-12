@@ -101,8 +101,42 @@ public struct ActivatedRoute {
     }
 }
 
+import Introspect
+import UIKit
+
 public class Router: ObservableObject {
+    private typealias PushViewController = @convention(block) (UINavigationController, UIViewController, Bool) -> Void
+    
     @Published private(set) var route: ActivatedRoute = .root
+    
+    private var pendingActivation: (() -> Void)?
+    
+    weak var navigationController: UINavigationController? {
+        didSet {
+            let pushViewController = class_getInstanceMethod(UINavigationController.self, #selector(UINavigationController.pushViewController(_:animated:)))!
+            
+            let defaultImplementation = method_getImplementation(pushViewController)
+            let defaultBlock = unsafeBitCast(defaultImplementation, to: PushViewController.self)
+            
+            let block: PushViewController = { [weak self] (_self, viewController, animated) in
+                defaultBlock(_self, viewController, animated)
+                
+                if let coordinator = _self.transitionCoordinator {
+                    coordinator.animate(alongsideTransition: nil) { [weak self] context in
+                        self?.executePendingActivation()
+                    }
+                }
+            }
+            
+            let implementation = imp_implementationWithBlock(block)
+            method_setImplementation(pushViewController, implementation)
+        }
+    }
+    
+    private func executePendingActivation() {
+        pendingActivation?()
+        pendingActivation = nil
+    }
     
     public func activate(_ segments: RouteSegments) {
         if segments.count - route.segments.count - 1 > 0 {
@@ -115,9 +149,11 @@ public class Router: ObservableObject {
     private func activate(partial segments: RouteSegments, through position: Int) {
         self.route = ActivatedRoute(segments: Array(segments.prefix(through: position)))
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
-            self.activate(segments)
-        }
+        pendingActivation = { self.activate(segments) }
+        
+//        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
+//            self.activate(segments)
+//        }
     }
     
     public func pop() {
