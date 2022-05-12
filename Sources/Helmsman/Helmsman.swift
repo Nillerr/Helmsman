@@ -127,6 +127,11 @@ public class Router: ObservableObject {
                     coordinator.animate(alongsideTransition: nil) { [weak self] context in
                         self?.executePendingActivation()
                     }
+                } else {
+                    print("No coordinator")
+                    DispatchQueue.main.async { [weak self] in
+                        self?.executePendingActivation()
+                    }
                 }
             }
             
