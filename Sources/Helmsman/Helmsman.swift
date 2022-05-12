@@ -106,7 +106,7 @@ import UIKit
 
 public class Router: ObservableObject {
     private typealias PushViewController = @convention(block) (UINavigationController, UIViewController, Bool) -> Void
-    private typealias CPushViewController = @convention(c) (UINavigationController, UIViewController, Bool) -> Void
+    private typealias CPushViewController = @convention(c) (UINavigationController, Selector, UIViewController, Bool) -> Void
     
     @Published private(set) var route: ActivatedRoute = .root
     
@@ -114,13 +114,14 @@ public class Router: ObservableObject {
     
     weak var navigationController: UINavigationController? {
         didSet {
-            let pushViewController = class_getInstanceMethod(UINavigationController.self, #selector(UINavigationController.pushViewController(_:animated:)))!
+            let selector = #selector(UINavigationController.pushViewController(_:animated:))
+            let pushViewController = class_getInstanceMethod(UINavigationController.self, selector)!
             
             let defaultImplementation = method_getImplementation(pushViewController)
             let defaultBlock = unsafeBitCast(defaultImplementation, to: CPushViewController.self)
             
             let block: PushViewController = { [weak self] (_self, viewController, animated) in
-                defaultBlock(_self, viewController, animated)
+                defaultBlock(_self, selector, viewController, animated)
                 
                 if let coordinator = _self.transitionCoordinator {
                     coordinator.animate(alongsideTransition: nil) { [weak self] context in
