@@ -126,7 +126,9 @@ public class Router: ObservableObject {
                 if let coordinator = _self.transitionCoordinator {
                     coordinator.animate(alongsideTransition: nil) { [weak self] context in
                         print("<coordinator> executePendingActivation")
-                        self?.executePendingActivation()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + context.transitionDuration) { [weak self] in
+                            self?.executePendingActivation()
+                        }
                     }
                 } else {
                     print("<coordinator> No coordinator")
